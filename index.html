@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Film Process Control - Westminster Darkroom</title>
+  <style>
+    :root {
+      --ok: #22c55e;
+      --action: #f59e0b;
+      --control: #ef4444;
+      --bg: #1a1a2e;
+      --card: #16213e;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #334155;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    header p { color: var(--muted); font-size: 0.875rem; }
+    
+    .process-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 0.5rem;
+      color: var(--text);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tab:hover { border-color: var(--muted); }
+    .tab.active { border-color: var(--ok); background: rgba(34, 197, 94, 0.1); }
+    
+    .card {
+      background: var(--card);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .card h2 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .reference-section { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; }
+    .reference-status { 
+      padding: 0.5rem 1rem; 
+      background: rgba(34, 197, 94, 0.1); 
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      flex: 1;
+    }
+    .reference-status.missing { background: rgba(239, 68, 68, 0.1); color: var(--control); }
+    
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary { background: var(--ok); color: #000; }
+    .btn-primary:hover { background: #16a34a; }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-secondary:hover { background: #475569; }
+    .btn-danger { background: var(--control); color: #fff; }
+    
+    .input-grid {
+      display: grid;
+      gap: 0.75rem;
+    }
+    
+    .input-grid.c41 { grid-template-columns: repeat(4, 1fr); }
+    .input-grid.bw { grid-template-columns: repeat(4, 1fr); }
+    
+    .input-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .input-group label { 
+      font-size: 0.75rem; 
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    
+    .input-group input {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 0.375rem;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      width: 100%;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--ok);
+    }
+    
+    .input-row {
+      display: contents;
+    }
+    
+    .row-label {
+      grid-column: 1 / -1;
+      font-weight: 600;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+      margin-top: 0.5rem;
+    }
+    
+    .row-label:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+    
+    .channel-inputs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      grid-column: 1 / -1;
+    }
+    
+    .channel-inputs .input-group label.r { color: #f87171; }
+    .channel-inputs .input-group label.g { color: #4ade80; }
+    .channel-inputs .input-group label.b { color: #60a5fa; }
+    
+    .results-panel {
+      display: none;
+    }
+    
+    .results-panel.visible { display: block; }
+    
+    .status-banner {
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    .status-banner.ok { background: rgba(34, 197, 94, 0.2); color: var(--ok); }
+    .status-banner.action { background: rgba(245, 158, 11, 0.2); color: var(--action); }
+    .status-banner.control { background: rgba(239, 68, 68, 0.2); color: var(--control); }
+    
+    .deviations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+    
+    .deviations-table th, .deviations-table td {
+      padding: 0.5rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    
+    .deviations-table th { background: var(--bg); color: var(--muted); }
+    .deviations-table td.ok { color: var(--ok); }
+    .deviations-table td.action { color: var(--action); background: rgba(245, 158, 11, 0.1); }
+    .deviations-table td.control { color: var(--control); background: rgba(239, 68, 68, 0.1); }
+    
+    .problem-card {
+      background: var(--bg);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-left: 4px solid var(--action);
+    }
+    
+    .problem-card.control { border-left-color: var(--control); }
+    .problem-card.ok { border-left-color: var(--ok); }
+    
+    .problem-card h3 { margin-bottom: 0.5rem; font-size: 1rem; }
+    .problem-card .cause { color: var(--muted); margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .problem-card .action { margin-bottom: 0.5rem; font-size: 0.875rem; }
+    .problem-card .ref { font-size: 0.75rem; color: var(--muted); }
+    
+    .notes-field {
+      width: 100%;
+      min-height: 80px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.875rem;
+      resize: vertical;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    
+    .action-buttons .btn { flex: 1; padding: 0.75rem; font-size: 1rem; }
+    
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+    
+    .history-table th, .history-table td {
+      padding: 0.375rem 0.5rem;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    
+    .history-table th { background: var(--bg); color: var(--muted); position: sticky; top: 0; }
+    .history-table tr:hover { background: rgba(255,255,255,0.02); }
+    
+    .history-scroll {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    
+    .modal.visible { display: flex; }
+    
+    .modal-content {
+      background: var(--card);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      max-width: 500px;
+      width: 90%;
+    }
+    
+    .modal-content h2 { margin-bottom: 1rem; }
+    .modal-buttons { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .modal-buttons .btn { flex: 1; }
+    
+    .toast {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card);
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--ok);
+      display: none;
+    }
+    
+    .toast.visible { display: block; }
+    .toast.error { border-color: var(--control); }
+    
+    @media (max-width: 600px) {
+      .input-grid.c41 { grid-template-columns: 1fr; }
+      .channel-inputs { grid-template-columns: repeat(3, 1fr); }
+      .reference-section { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Film Process Control</h1>
+      <p>University of Westminster Harrow Darkroom</p>
+    </header>
+    
+    <div class="process-tabs">
+      <button class="tab active" data-process="c41">C-41 Colour</button>
+      <button class="tab" data-process="bw">B&W</button>
+    </div>
+    
+    <!-- Reference Values -->
+    <div class="card">
+      <h2>Reference Values</h2>
+      <div class="reference-section">
+        <div class="reference-status" id="refStatus">
+          <span id="refStatusText">No reference set</span>
+        </div>
+        <button class="btn btn-primary" id="setRefBtn">Set Reference</button>
+        <button class="btn btn-secondary" id="clearRefBtn">Clear</button>
+      </div>
+    </div>
+    
+    <!-- Data Entry -->
+    <div class="card">
+      <h2>Test Strip Readings <span style="color: var(--muted); font-weight: normal; text-transform: none;">(values ×100)</span></h2>
+      
+      <!-- C-41 Inputs -->
+      <div class="input-grid c41" id="c41Inputs">
+        <div class="row-label">D-max</div>
+        <div class="channel-inputs">
+          <div class="input-group"><label class="r">Red</label><input type="number" id="dmax_r" step="1"></div>
+          <div class="input-group"><label class="g">Green</label><input type="number" id="dmax_g" step="1"></div>
+          <div class="input-group"><label class="b">Blue</label><input type="number" id="dmax_b" step="1"></div>
+        </div>
+        
+        <div class="row-label">HD (High Density)</div>
+        <div class="channel-inputs">
+          <div class="input-group"><label class="r">Red</label><input type="number" id="hd_r" step="1"></div>
+          <div class="input-group"><label class="g">Green</label><input type="number" id="hd_g" step="1"></div>
+          <div class="input-group"><label class="b">Blue</label><input type="number" id="hd_b" step="1"></div>
+        </div>
+        
+        <div class="row-label">LD (Low Density)</div>
+        <div class="channel-inputs">
+          <div class="input-group"><label class="r">Red</label><input type="number" id="ld_r" step="1"></div>
+          <div class="input-group"><label class="g">Green</label><input type="number" id="ld_g" step="1"></div>
+          <div class="input-group"><label class="b">Blue</label><input type="number" id="ld_b" step="1"></div>
+        </div>
+        
+        <div class="row-label">D-min</div>
+        <div class="channel-inputs">
+          <div class="input-group"><label class="r">Red</label><input type="number" id="dmin_r" step="1"></div>
+          <div class="input-group"><label class="g">Green</label><input type="number" id="dmin_g" step="1"></div>
+          <div class="input-group"><label class="b">Blue</label><input type="number" id="dmin_b" step="1"></div>
+        </div>
+      </div>
+      
+      <!-- B&W Inputs -->
+      <div class="input-grid bw" id="bwInputs" style="display: none;">
+        <div class="input-group"><label>D-max</label><input type="number" id="bw_dmax" step="1"></div>
+        <div class="input-group"><label>HD</label><input type="number" id="bw_hd" step="1"></div>
+        <div class="input-group"><label>LD</label><input type="number" id="bw_ld" step="1"></div>
+        <div class="input-group"><label>D-min</label><input type="number" id="bw_dmin" step="1"></div>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="btn btn-primary" id="analyseBtn">Analyse</button>
+        <button class="btn btn-secondary" id="clearInputsBtn">Clear</button>
+      </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="card results-panel" id="resultsPanel">
+      <h2>Analysis Results</h2>
+      
+      <div class="status-banner" id="statusBanner">Process OK</div>
+      
+      <div id="deviationsContainer"></div>
+      
+      <h3 style="margin: 1rem 0 0.75rem; color: var(--muted);">Diagnosis</h3>
+      <div id="problemsContainer"></div>
+      
+      <h3 style="margin: 1rem 0 0.75rem; color: var(--muted);">Notes</h3>
+      <textarea class="notes-field" id="notesField" placeholder="Record any actions taken, observations, or other notes..."></textarea>
+      
+      <div class="action-buttons">
+        <button class="btn btn-primary" id="logBtn">Log to Sheet</button>
+      </div>
+    </div>
+    
+    <!-- History -->
+    <div class="card">
+      <h2>Recent Readings (Last 5)</h2>
+      <div class="history-scroll">
+        <table class="history-table" id="historyTable">
+          <thead id="historyHeader"></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+      <p id="noHistory" style="color: var(--muted); text-align: center; padding: 1rem;">No readings logged yet</p>
+    </div>
+  </div>
+  
+  <!-- Reference Modal -->
+  <div class="modal" id="refModal">
+    <div class="modal-content">
+      <h2>Set Reference Values</h2>
+      <p style="color: var(--muted); margin-bottom: 1rem;">Enter the reference strip values. These will be stored and used to calculate deviations.</p>
+      
+      <div id="refModalInputs"></div>
+      
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" id="cancelRefBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveRefBtn">Save Reference</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  
+  <script src="diagnostics.js"></script>
+  <script>
+    // App State
+    const state = {
+      process: 'c41',
+      reference: {
+        c41: null,
+        bw: null
+      },
+      history: {
+        c41: [],
+        bw: []
+      },
+      lastResult: null
+    };
+    
+    // Google Apps Script URL - UPDATE THIS
+    const APPS_SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+    
+    // DOM Elements
+    const tabs = document.querySelectorAll('.tab');
+    const c41Inputs = document.getElementById('c41Inputs');
+    const bwInputs = document.getElementById('bwInputs');
+    const refStatus = document.getElementById('refStatus');
+    const refStatusText = document.getElementById('refStatusText');
+    const resultsPanel = document.getElementById('resultsPanel');
+    const refModal = document.getElementById('refModal');
+    const toast = document.getElementById('toast');
+    
+    // Initialize
+    function init() {
+      loadFromStorage();
+      updateRefStatus();
+      updateHistoryTable();
+      
+      // Tab switching
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          state.process = tab.dataset.process;
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          c41Inputs.style.display = state.process === 'c41' ? 'grid' : 'none';
+          bwInputs.style.display = state.process === 'bw' ? 'grid' : 'none';
+          
+          resultsPanel.classList.remove('visible');
+          updateRefStatus();
+          updateHistoryTable();
+        });
+      });
+      
+      // Buttons
+      document.getElementById('setRefBtn').addEventListener('click', openRefModal);
+      document.getElementById('clearRefBtn').addEventListener('click', clearReference);
+      document.getElementById('analyseBtn').addEventListener('click', analyse);
+      document.getElementById('clearInputsBtn').addEventListener('click', clearInputs);
+      document.getElementById('logBtn').addEventListener('click', logToSheet);
+      document.getElementById('cancelRefBtn').addEventListener('click', () => refModal.classList.remove('visible'));
+      document.getElementById('saveRefBtn').addEventListener('click', saveReference);
+    }
+    
+    // Storage
+    function loadFromStorage() {
+      const saved = localStorage.getItem('filmProcessControl');
+      if (saved) {
+        const data = JSON.parse(saved);
+        state.reference = data.reference || { c41: null, bw: null };
+        state.history = data.history || { c41: [], bw: [] };
+      }
+    }
+    
+    function saveToStorage() {
+      localStorage.setItem('filmProcessControl', JSON.stringify({
+        reference: state.reference,
+        history: state.history
+      }));
+    }
+    
+    // Reference Management
+    function updateRefStatus() {
+      const ref = state.reference[state.process];
+      if (ref) {
+        refStatus.classList.remove('missing');
+        if (state.process === 'c41') {
+          refStatusText.textContent = `Reference set: D-min R=${ref.dmin.r} G=${ref.dmin.g} B=${ref.dmin.b}`;
+        } else {
+          refStatusText.textContent = `Reference set: D-min=${ref.dmin}, LD=${ref.ld}, HD=${ref.hd}`;
+        }
+      } else {
+        refStatus.classList.add('missing');
+        refStatusText.textContent = 'No reference set - click "Set Reference" to begin';
+      }
+    }
+    
+    function openRefModal() {
+      const container = document.getElementById('refModalInputs');
+      
+      if (state.process === 'c41') {
+        container.innerHTML = `
+          <div class="input-grid" style="gap: 0.5rem; margin-bottom: 0.5rem;">
+            <div class="row-label" style="font-size: 0.875rem;">D-max</div>
+            <div class="channel-inputs">
+              <div class="input-group"><label class="r" style="font-size: 0.7rem;">R</label><input type="number" id="ref_dmax_r" step="1"></div>
+              <div class="input-group"><label class="g" style="font-size: 0.7rem;">G</label><input type="number" id="ref_dmax_g" step="1"></div>
+              <div class="input-group"><label class="b" style="font-size: 0.7rem;">B</label><input type="number" id="ref_dmax_b" step="1"></div>
+            </div>
+            <div class="row-label" style="font-size: 0.875rem;">HD</div>
+            <div class="channel-inputs">
+              <div class="input-group"><label class="r" style="font-size: 0.7rem;">R</label><input type="number" id="ref_hd_r" step="1"></div>
+              <div class="input-group"><label class="g" style="font-size: 0.7rem;">G</label><input type="number" id="ref_hd_g" step="1"></div>
+              <div class="input-group"><label class="b" style="font-size: 0.7rem;">B</label><input type="number" id="ref_hd_b" step="1"></div>
+            </div>
+            <div class="row-label" style="font-size: 0.875rem;">LD</div>
+            <div class="channel-inputs">
+              <div class="input-group"><label class="r" style="font-size: 0.7rem;">R</label><input type="number" id="ref_ld_r" step="1"></div>
+              <div class="input-group"><label class="g" style="font-size: 0.7rem;">G</label><input type="number" id="ref_ld_g" step="1"></div>
+              <div class="input-group"><label class="b" style="font-size: 0.7rem;">B</label><input type="number" id="ref_ld_b" step="1"></div>
+            </div>
+            <div class="row-label" style="font-size: 0.875rem;">D-min</div>
+            <div class="channel-inputs">
+              <div class="input-group"><label class="r" style="font-size: 0.7rem;">R</label><input type="number" id="ref_dmin_r" step="1"></div>
+              <div class="input-group"><label class="g" style="font-size: 0.7rem;">G</label><input type="number" id="ref_dmin_g" step="1"></div>
+              <div class="input-group"><label class="b" style="font-size: 0.7rem;">B</label><input type="number" id="ref_dmin_b" step="1"></div>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="input-grid bw" style="margin-bottom: 0.5rem;">
+            <div class="input-group"><label>D-max</label><input type="number" id="ref_bw_dmax" step="1"></div>
+            <div class="input-group"><label>HD</label><input type="number" id="ref_bw_hd" step="1"></div>
+            <div class="input-group"><label>LD</label><input type="number" id="ref_bw_ld" step="1"></div>
+            <div class="input-group"><label>D-min</label><input type="number" id="ref_bw_dmin" step="1"></div>
+          </div>
+        `;
+      }
+      
+      refModal.classList.add('visible');
+    }
+    
+    function saveReference() {
+      if (state.process === 'c41') {
+        state.reference.c41 = {
+          dmax: { r: getVal('ref_dmax_r'), g: getVal('ref_dmax_g'), b: getVal('ref_dmax_b') },
+          hd: { r: getVal('ref_hd_r'), g: getVal('ref_hd_g'), b: getVal('ref_hd_b') },
+          ld: { r: getVal('ref_ld_r'), g: getVal('ref_ld_g'), b: getVal('ref_ld_b') },
+          dmin: { r: getVal('ref_dmin_r'), g: getVal('ref_dmin_g'), b: getVal('ref_dmin_b') }
+        };
+      } else {
+        state.reference.bw = {
+          dmax: getVal('ref_bw_dmax'),
+          hd: getVal('ref_bw_hd'),
+          ld: getVal('ref_bw_ld'),
+          dmin: getVal('ref_bw_dmin')
+        };
+      }
+      
+      saveToStorage();
+      updateRefStatus();
+      refModal.classList.remove('visible');
+      showToast('Reference values saved');
+    }
+    
+    function clearReference() {
+      state.reference[state.process] = null;
+      saveToStorage();
+      updateRefStatus();
+      showToast('Reference cleared');
+    }
+    
+    // Analysis
+    function analyse() {
+      const ref = state.reference[state.process];
+      if (!ref) {
+        showToast('Set reference values first', true);
+        return;
+      }
+      
+      let result;
+      
+      if (state.process === 'c41') {
+        const readings = {
+          dmax: { r: getVal('dmax_r'), g: getVal('dmax_g'), b: getVal('dmax_b') },
+          hd: { r: getVal('hd_r'), g: getVal('hd_g'), b: getVal('hd_b') },
+          ld: { r: getVal('ld_r'), g: getVal('ld_g'), b: getVal('ld_b') },
+          dmin: { r: getVal('dmin_r'), g: getVal('dmin_g'), b: getVal('dmin_b') },
+          yellow_b: getVal('dmin_b') // Using D-min B as yellow for now
+        };
+        
+        result = diagnoseC41(readings, ref);
+        result.readings = readings;
+        displayC41Results(result);
+      } else {
+        const readings = {
+          dmax: getVal('bw_dmax'),
+          hd: getVal('bw_hd'),
+          ld: getVal('bw_ld'),
+          dmin: getVal('bw_dmin')
+        };
+        
+        result = diagnoseBW(readings, ref);
+        result.readings = readings;
+        displayBWResults(result);
+      }
+      
+      state.lastResult = result;
+      resultsPanel.classList.add('visible');
+    }
+    
+    function displayC41Results(result) {
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner ' + result.status.overall;
+      banner.textContent = result.status.overall === 'ok' ? 'Process OK' :
+                          result.status.overall === 'action' ? 'Action Required' : 'Control Limit Exceeded';
+      
+      // Deviations table
+      const container = document.getElementById('deviationsContainer');
+      container.innerHTML = `
+        <table class="deviations-table">
+          <thead>
+            <tr><th></th><th>Red</th><th>Green</th><th>Blue</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>D-min</td>
+              ${['r','g','b'].map(c => `<td class="${getDevClass(result.deviations.dmin[c], 'dmin')}">${formatDev(result.deviations.dmin[c])}</td>`).join('')}
+            </tr>
+            <tr>
+              <td>LD</td>
+              ${['r','g','b'].map(c => `<td class="${getDevClass(result.deviations.ld[c], 'ld')}">${formatDev(result.deviations.ld[c])}</td>`).join('')}
+            </tr>
+            <tr>
+              <td>HD-LD</td>
+              ${['r','g','b'].map(c => `<td class="${getDevClass(result.deviations.hdld[c], 'hdld')}">${formatDev(result.deviations.hdld[c])}</td>`).join('')}
+            </tr>
+          </tbody>
+        </table>
+      `;
+      
+      displayProblems(result.problems);
+    }
+    
+    function displayBWResults(result) {
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'status-banner ' + result.status.overall;
+      banner.textContent = result.status.overall === 'ok' ? 'Process OK' :
+                          result.status.overall === 'action' ? 'Action Required' : 'Control Limit Exceeded';
+      
+      const container = document.getElementById('deviationsContainer');
+      container.innerHTML = `
+        <table class="deviations-table">
+          <thead>
+            <tr><th>LD Dev</th><th>HD-LD</th><th>HD-LD Dev</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="${getDevClass(result.deviations.ld, 'ld', 'bw')}">${formatDev(result.deviations.ld)}</td>
+              <td>${result.hdld}</td>
+              <td class="${getDevClass(result.deviations.hdld, 'hdld', 'bw')}">${formatDev(result.deviations.hdld)}</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+      
+      displayProblems(result.problems);
+    }
+    
+    function displayProblems(problems) {
+      const container = document.getElementById('problemsContainer');
+      container.innerHTML = problems.map(p => `
+        <div class="problem-card ${p.severity || 'action'}">
+          <h3>${p.name || p.issue}</h3>
+          ${p.cause ? `<p class="cause"><strong>Cause:</strong> ${p.cause}</p>` : ''}
+          <p class="action"><strong>Action:</strong> ${p.action}</p>
+          ${p.manual_ref ? `<p class="ref">Manual Reference: ${p.manual_ref}</p>` : ''}
+        </div>
+      `).join('');
+    }
+    
+    function getDevClass(value, type, process = 'c41') {
+      const tol = TOLERANCES[process][type];
+      if (!tol) return 'ok';
+      const absVal = Math.abs(value);
+      if (absVal > tol.control) return 'control';
+      if (absVal > tol.action) return 'action';
+      return 'ok';
+    }
+    
+    function formatDev(value) {
+      const sign = value >= 0 ? '+' : '';
+      return sign + value;
+    }
+    
+    // History
+    function updateHistoryTable() {
+      const history = state.history[state.process].slice(-5).reverse();
+      const headerEl = document.getElementById('historyHeader');
+      const bodyEl = document.getElementById('historyBody');
+      const noHistory = document.getElementById('noHistory');
+      
+      if (history.length === 0) {
+        headerEl.innerHTML = '';
+        bodyEl.innerHTML = '';
+        noHistory.style.display = 'block';
+        return;
+      }
+      
+      noHistory.style.display = 'none';
+      
+      if (state.process === 'c41') {
+        headerEl.innerHTML = `
+          <tr>
+            <th>Date</th>
+            <th>D-min R</th><th>G</th><th>B</th>
+            <th>LD R</th><th>G</th><th>B</th>
+            <th>HD-LD R</th><th>G</th><th>B</th>
+            <th>Status</th>
+          </tr>
+        `;
+        bodyEl.innerHTML = history.map(h => `
+          <tr>
+            <td>${h.date}</td>
+            <td>${h.readings.dmin.r}</td><td>${h.readings.dmin.g}</td><td>${h.readings.dmin.b}</td>
+            <td>${h.readings.ld.r}</td><td>${h.readings.ld.g}</td><td>${h.readings.ld.b}</td>
+            <td>${h.hdld?.r || '-'}</td><td>${h.hdld?.g || '-'}</td><td>${h.hdld?.b || '-'}</td>
+            <td style="color: var(--${h.status})">${h.status.toUpperCase()}</td>
+          </tr>
+        `).join('');
+      } else {
+        headerEl.innerHTML = `
+          <tr>
+            <th>Date</th>
+            <th>D-max</th><th>HD</th><th>LD</th><th>D-min</th>
+            <th>HD-LD</th><th>Status</th>
+          </tr>
+        `;
+        bodyEl.innerHTML = history.map(h => `
+          <tr>
+            <td>${h.date}</td>
+            <td>${h.readings.dmax}</td>
+            <td>${h.readings.hd}</td>
+            <td>${h.readings.ld}</td>
+            <td>${h.readings.dmin}</td>
+            <td>${h.hdld || '-'}</td>
+            <td style="color: var(--${h.status})">${h.status.toUpperCase()}</td>
+          </tr>
+        `).join('');
+      }
+    }
+    
+    // Logging
+    async function logToSheet() {
+      if (!state.lastResult) {
+        showToast('Run analysis first', true);
+        return;
+      }
+      
+      const entry = {
+        date: new Date().toLocaleDateString('en-GB'),
+        time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        process: state.process,
+        readings: state.lastResult.readings,
+        deviations: state.lastResult.deviations,
+        status: state.lastResult.status.overall,
+        problems: state.lastResult.problems.map(p => p.name || p.issue).join('; '),
+        notes: document.getElementById('notesField').value
+      };
+      
+      // Calculate HD-LD for history
+      if (state.process === 'c41') {
+        entry.hdld = {
+          r: entry.readings.hd.r - entry.readings.ld.r,
+          g: entry.readings.hd.g - entry.readings.ld.g,
+          b: entry.readings.hd.b - entry.readings.ld.b
+        };
+      } else {
+        entry.hdld = entry.readings.hd - entry.readings.ld;
+      }
+      
+      // Add to local history
+      state.history[state.process].push(entry);
+      if (state.history[state.process].length > 50) {
+        state.history[state.process] = state.history[state.process].slice(-50);
+      }
+      saveToStorage();
+      updateHistoryTable();
+      
+      // Send to Google Sheet
+      if (APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+        try {
+          await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(entry)
+          });
+          showToast('Logged to sheet');
+        } catch (err) {
+          showToast('Saved locally (sheet unavailable)', true);
+        }
+      } else {
+        showToast('Saved locally');
+      }
+      
+      // Clear notes
+      document.getElementById('notesField').value = '';
+    }
+    
+    // Utilities
+    function getVal(id) {
+      return parseInt(document.getElementById(id)?.value) || 0;
+    }
+    
+    function clearInputs() {
+      const inputs = state.process === 'c41' ? c41Inputs : bwInputs;
+      inputs.querySelectorAll('input').forEach(i => i.value = '');
+      resultsPanel.classList.remove('visible');
+    }
+    
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.className = 'toast visible' + (isError ? ' error' : '');
+      setTimeout(() => toast.classList.remove('visible'), 3000);
+    }
+    
+    // Start
+    init();
+  </script>
+</body>
+</html>

@@ -10,6 +10,17 @@ Web-based diagnostic tool for film processing at the University of Westminster H
 - **Pattern Matching**: Automatic fault diagnosis with corrective actions
 - **History Tracking**: Last 5 readings displayed, full history in Google Sheets
 - **Local Storage**: Reference values and history persist in browser
+- **Three Theme Modes**: Light, Dark, and DISCO MODE ✨
+
+## Theme Modes
+
+| Mode | Purpose |
+|------|---------|
+| **Light** | Clean, professional — for well-lit offices or screen sharing |
+| **Dark** | Darkroom heritage — low-light friendly, reduces eye strain |
+| **Disco** | Celebrate good process control — animated gradients, pulsing status indicators |
+
+Theme preference persists across sessions. DISCO MODE remains fully functional as a diagnostic tool.
 
 ## Files
 

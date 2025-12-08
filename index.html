@@ -1268,8 +1268,11 @@
       lastResult: null
     };
     
-    // Google Apps Script URL - UPDATE THIS
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGD2os4_hIuACLi8nmQSEpaghLF0A_-RuYtP6mOUyMHXbalpWEUmXJQIBsGnNh0-tCqw/exec';
+    // Google Apps Script URLs - separate spreadsheets for each process
+    const APPS_SCRIPT_URLS = {
+      c41: 'https://script.google.com/macros/s/AKfycbwtuFdSeyw4rzu40a5Mn_BPGhjfy7P6iQfjERtHdh_FrylekyZAR5xzyJ95YjwHRXNGJg/exec',
+      bw: 'https://script.google.com/macros/s/AKfycbwYZuIa_fxdmslV9wMTYQcTLm68ntzFZ6xXJYSjh2YITqXAGfjRP6f3oS57HJBV0bFJ/exec'
+    };
     
     // ═══════════════════════════════════════════════════════════════
     // DOM ELEMENTS
@@ -1682,24 +1685,25 @@
       saveToStorage();
       updateHistoryTable();
       
-      if (APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+      const scriptUrl = APPS_SCRIPT_URLS[state.process];
+      if (scriptUrl) {
         try {
           // Use form submission approach for Google Apps Script compatibility
-          const response = await fetch(APPS_SCRIPT_URL, {
+          const response = await fetch(scriptUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(entry)
           });
-          showToast('Logged to sheet ✓');
+          showToast(`Logged to ${state.process.toUpperCase()} sheet ✓`);
         } catch (err) {
           // Fallback: try with no-cors (fire and forget)
           try {
-            await fetch(APPS_SCRIPT_URL, {
+            await fetch(scriptUrl, {
               method: 'POST',
               mode: 'no-cors',
               body: JSON.stringify(entry)
             });
-            showToast('Logged to sheet');
+            showToast(`Logged to ${state.process.toUpperCase()} sheet`);
           } catch (e) {
             showToast('Saved locally (sheet unavailable)', true);
           }

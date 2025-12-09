@@ -129,14 +129,13 @@ function logReading(data) {
 }
 
 /**
- * Get monthly sheet name matching your Excel format
- * e.g., "Nov 2025", "Dec 2025"
+ * Get quarterly sheet name
+ * e.g., "Q4 2025", "Q1 2026"
  */
 function getMonthlySheetName(process) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June',
-                  'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
   const now = new Date();
-  return months[now.getMonth()] + ' ' + now.getFullYear();
+  const quarter = Math.floor(now.getMonth() / 3) + 1;
+  return 'Q' + quarter + ' ' + now.getFullYear();
 }
 
 /**

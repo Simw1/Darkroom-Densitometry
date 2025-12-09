@@ -1147,6 +1147,7 @@
         <button class="btn btn-primary" id="setRefBtn">Set Reference</button>
         <button class="btn btn-secondary" id="clearRefBtn">Clear</button>
       </div>
+      <div id="refValuesDisplay" style="display: none; margin-top: var(--space-4);"></div>
     </div>
     
     <!-- Data Entry -->
@@ -1373,16 +1374,50 @@
     
     function updateRefStatus() {
       const ref = state.reference[state.process];
+      const refDisplay = document.getElementById('refValuesDisplay');
+
       if (ref) {
         refStatus.classList.remove('missing');
+        refStatusText.textContent = 'Reference values set ✓';
+        refDisplay.style.display = 'block';
+
         if (state.process === 'c41') {
-          refStatusText.textContent = `Reference set: D-min R=${ref.dmin.r} G=${ref.dmin.g} B=${ref.dmin.b}`;
+          refDisplay.innerHTML = `
+            <table class="deviations-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr><th></th><th style="color: #f87171;">Red</th><th style="color: #4ade80;">Green</th><th style="color: #60a5fa;">Blue</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>D-max</strong></td><td>${ref.dmax.r}</td><td>${ref.dmax.g}</td><td>${ref.dmax.b}</td></tr>
+                <tr><td><strong>HD</strong></td><td>${ref.hd.r}</td><td>${ref.hd.g}</td><td>${ref.hd.b}</td></tr>
+                <tr><td><strong>LD</strong></td><td>${ref.ld.r}</td><td>${ref.ld.g}</td><td>${ref.ld.b}</td></tr>
+                <tr><td><strong>D-min</strong></td><td>${ref.dmin.r}</td><td>${ref.dmin.g}</td><td>${ref.dmin.b}</td></tr>
+              </tbody>
+            </table>
+          `;
         } else {
-          refStatusText.textContent = `Reference set: D-min=${ref.dmin}, LD=${ref.ld}, HD=${ref.hd}`;
+          refDisplay.innerHTML = `
+            <table class="deviations-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr><th>D-max</th><th>HD</th><th>LD</th><th>D-min</th><th>HD-LD</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>${ref.dmax}</td>
+                  <td>${ref.hd}</td>
+                  <td>${ref.ld}</td>
+                  <td>${ref.dmin}</td>
+                  <td>${ref.hd - ref.ld}</td>
+                </tr>
+              </tbody>
+            </table>
+          `;
         }
       } else {
         refStatus.classList.add('missing');
         refStatusText.textContent = 'No reference set — click "Set Reference" to begin';
+        refDisplay.style.display = 'none';
+        refDisplay.innerHTML = '';
       }
     }
     

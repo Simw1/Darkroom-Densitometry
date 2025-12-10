@@ -471,8 +471,8 @@ function diagnoseC41(readings, reference) {
 
 function diagnoseBW(readings, reference) {
   const ld_dev = readings.ld - reference.ld;
-  const hdld = readings.hd - readings.ld;
-  const ref_hdld = reference.hd - reference.ld;
+  const hdld = readings.hd + readings.ld;
+  const ref_hdld = reference.hd + reference.ld;
   const hdld_dev = hdld - ref_hdld;
   const dmin_dev = readings.dmin - reference.dmin;
   
@@ -524,11 +524,11 @@ function calculateDeviations(readings, reference) {
       dev[patch][channel] = readings[patch][channel] - reference[patch][channel];
     }
   }
-  // Calculate HD-LD deviations
+  // Calculate HD+LD deviations
   dev.hdld = {};
   for (const channel of ['r', 'g', 'b']) {
-    const hdld = readings.hd[channel] - readings.ld[channel];
-    const ref_hdld = reference.hd[channel] - reference.ld[channel];
+    const hdld = readings.hd[channel] + readings.ld[channel];
+    const ref_hdld = reference.hd[channel] + reference.ld[channel];
     dev.hdld[channel] = hdld - ref_hdld;
   }
   return dev;

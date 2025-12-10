@@ -60,7 +60,7 @@ const CONFIG = {
     hdCol: 4,               // Column D
     ldCol: 5,               // Column E
     dminCol: 6,             // Column F
-    hdldCol: 7              // Column G (usually has formula =E-F or similar)
+    hdldCol: 7              // Column G (usually has formula =D+E or similar)
   }
 };
 
@@ -249,9 +249,9 @@ function writeBWData(sheet, row, data) {
   // D-min (Column F)
   sheet.getRange(row, cfg.dminCol).setValue(data.readings.dmin);
 
-  // HD-LD (Column G) - Set formula to match your template
-  // Your template uses =E{row}-F{row} or similar
-  const hdldFormula = '=' + columnToLetter(cfg.hdCol) + row + '-' + columnToLetter(cfg.ldCol) + row;
+  // HD+LD (Column G) - Set formula to match your template
+  // Your template uses =D{row}+E{row} or similar
+  const hdldFormula = '=' + columnToLetter(cfg.hdCol) + row + '+' + columnToLetter(cfg.ldCol) + row;
   sheet.getRange(row, cfg.hdldCol).setFormula(hdldFormula);
 }
 

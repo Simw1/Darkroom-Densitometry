@@ -1399,7 +1399,7 @@
           refDisplay.innerHTML = `
             <table class="deviations-table" style="font-size: 0.8rem;">
               <thead>
-                <tr><th>D-max</th><th>HD</th><th>LD</th><th>D-min</th><th>HD-LD</th></tr>
+                <tr><th>D-max</th><th>HD</th><th>LD</th><th>D-min</th><th>HD+LD</th></tr>
               </thead>
               <tbody>
                 <tr>
@@ -1407,7 +1407,7 @@
                   <td>${ref.hd}</td>
                   <td>${ref.ld}</td>
                   <td>${ref.dmin}</td>
-                  <td>${ref.hd - ref.ld}</td>
+                  <td>${ref.hd + ref.ld}</td>
                 </tr>
               </tbody>
             </table>
@@ -1561,7 +1561,7 @@
               ${['r','g','b'].map(c => `<td class="${getDevClass(result.deviations.ld[c], 'ld')}">${formatDev(result.deviations.ld[c])}</td>`).join('')}
             </tr>
             <tr>
-              <td>HD-LD</td>
+              <td>HD+LD</td>
               ${['r','g','b'].map(c => `<td class="${getDevClass(result.deviations.hdld[c], 'hdld')}">${formatDev(result.deviations.hdld[c])}</td>`).join('')}
             </tr>
           </tbody>
@@ -1581,7 +1581,7 @@
       container.innerHTML = `
         <table class="deviations-table">
           <thead>
-            <tr><th>LD Dev</th><th>HD-LD</th><th>HD-LD Dev</th></tr>
+            <tr><th>LD Dev</th><th>HD+LD</th><th>HD+LD Dev</th></tr>
           </thead>
           <tbody>
             <tr>
@@ -1665,7 +1665,7 @@
           <tr>
             <th>Date</th>
             <th>D-max</th><th>HD</th><th>LD</th><th>D-min</th>
-            <th>HD-LD</th><th>Status</th>
+            <th>HD+LD</th><th>Status</th>
           </tr>
         `;
         bodyEl.innerHTML = history.map(h => `
@@ -1705,12 +1705,12 @@
       
       if (state.process === 'c41') {
         entry.hdld = {
-          r: entry.readings.hd.r - entry.readings.ld.r,
-          g: entry.readings.hd.g - entry.readings.ld.g,
-          b: entry.readings.hd.b - entry.readings.ld.b
+          r: entry.readings.hd.r + entry.readings.ld.r,
+          g: entry.readings.hd.g + entry.readings.ld.g,
+          b: entry.readings.hd.b + entry.readings.ld.b
         };
       } else {
-        entry.hdld = entry.readings.hd - entry.readings.ld;
+        entry.hdld = entry.readings.hd + entry.readings.ld;
       }
       
       state.history[state.process].push(entry);
